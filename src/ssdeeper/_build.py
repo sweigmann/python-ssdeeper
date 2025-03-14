@@ -5,7 +5,6 @@ import cffi
 
 cdef: str = """
     static const long FUZZY_FLAG_ELIMSEQ;
-    static const long FUZZY_FLAG_NOTRUNC;
     static const long FUZZY_MAX_RESULT;
 
     struct fuzzy_state;
@@ -65,7 +64,6 @@ source: str = """
 
     struct fuzzy_state {};
     const long FUZZY_FLAG_ELIMSEQ = 0;
-    const long FUZZY_FLAG_NOTRUNC = 0;
     int (*fuzzy_clone)(const struct fuzzy_state *) = NULL;
     int (*fuzzy_digest)(
         const struct fuzzy_state *,
@@ -95,7 +93,6 @@ source: str = """
 CONDITIONAL_NAMES: Dict[str, Tuple] = {
     "ssdeep_HAS_STATEFUL_HASHING": (
         "FUZZY_FLAG_ELIMSEQ",
-        "FUZZY_FLAG_NOTRUNC",
         "fuzzy_clone",
         "fuzzy_digest",
         "fuzzy_free",
@@ -109,7 +106,7 @@ libraries: List[str] = ["fuzzy"]
 
 ffi: cffi.FFI = cffi.FFI()
 ffi.set_source(
-    "ssdeep._libfuzzy",
+    "ssdeeper._libfuzzy",
     source,
     libraries=libraries,
 )

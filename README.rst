@@ -1,41 +1,30 @@
-ssdeep Python Wrapper
-=====================
+ssdeeper Python Wrapper
+=======================
+
+Forked from: https://github.com/DinoTools/python-ssdeep
 
 This is a straightforward Python wrapper for `ssdeep by Jesse Kornblum`_, which is a library for computing context
 triggered piecewise hashes (CTPH). Also called fuzzy hashes, CTPH can match inputs that have homologies. Such inputs
 have sequences of identical bytes in the same order, although bytes in between these sequences may be different in both
 content and length.
 
-.. image:: https://img.shields.io/pypi/v/ssdeep.svg
-    :target: https://pypi.python.org/pypi/ssdeep/
-    :alt: Latest Version
+The ssdeeper wrapper uses the ssdeep libraries as augmented by Fraunhofer FKIE. 
+The specific flavor used is `ssdeep-refactored-4b-djb2-nocommonsub`.
 
-.. image:: https://img.shields.io/pypi/l/ssdeep.svg
-    :target: https://pypi.python.org/pypi/ssdeep/
-    :alt: License
-
-.. image:: https://img.shields.io/pypi/pyversions/ssdeep.svg
-    :target: https://pypi.python.org/pypi/ssdeep/
-    :alt: Python Versions
-
-.. image:: https://readthedocs.org/projects/python-ssdeep/badge/
-    :target: https://python-ssdeep.readthedocs.io/en/latest/
-    :alt: Latest Docs
-
-.. image:: https://github.com/dinotools/python-ssdeep/actions/workflows/codeql-analysis.yml/badge.svg?branch=master
-    :target: https://github.com/DinoTools/python-ssdeep/actions/workflows/codeql-analysis.yml
+.. image:: https://github.com/sweigmann/python-ssdeeper/actions/workflows/codeql-analysis.yml/badge.svg?branch=master
+    :target: https://github.com/sweigmann/python-ssdeeper/actions/workflows/codeql-analysis.yml
     :alt: CodeQL tests
 
-.. image:: https://github.com/dinotools/python-ssdeep/actions/workflows/python-linux.yml/badge.svg?branch=master
-    :target: https://github.com/DinoTools/python-ssdeep/actions/workflows/python-linux.yml
+.. image:: https://github.com/sweigmann/python-ssdeeper/actions/workflows/python-linux.yml/badge.svg?branch=master
+    :target: https://github.com/sweigmann/python-ssdeeper/actions/workflows/python-linux.yml
     :alt: CI test status on Linux
 
-.. image:: https://github.com/dinotools/python-ssdeep/actions/workflows/debian.yml/badge.svg?branch=master
-    :target: https://github.com/DinoTools/python-ssdeep/actions/workflows/debian.yml
+.. image:: https://github.com/sweigmann/python-ssdeeper/actions/workflows/debian.yml/badge.svg?branch=master
+    :target: https://github.com/sweigmann/python-ssdeeper/actions/workflows/debian.yml
     :alt: CI test status on Debian
 
-.. image:: https://github.com/dinotools/python-ssdeep/actions/workflows/ubuntu.yml/badge.svg?branch=master
-    :target: https://github.com/DinoTools/python-ssdeep/actions/workflows/ubuntu.yml
+.. image:: https://github.com/sweigmann/python-ssdeeper/actions/workflows/ubuntu.yml/badge.svg?branch=master
+    :target: https://github.com/sweigmann/python-ssdeeper/actions/workflows/ubuntu.yml
     :alt: CI test status on Debian
 
 
@@ -46,23 +35,23 @@ To compute a fuzzy hash, use ``hash`` function:
 
 .. code-block:: pycon
 
-    >>> import ssdeep
-    >>> hash1 = ssdeep.hash('Also called fuzzy hashes, Ctph can match inputs that have homologies.')
+    >>> import ssdeeper
+    >>> hash1 = ssdeeper.hash('Also called fuzzy hashes, Ctph can match inputs that have homologies.')
     >>> hash1
-    '3:AXGBicFlgVNhBGcL6wCrFQEv:AXGHsNhxLsr2C'
-    >>> hash2 = ssdeep.hash('Also called fuzzy hashes, CTPH can match inputs that have homologies.')
+    '3:AN8gu5QklJgVNhyEgcGwFEBQJaL:VgDhxFkL'
+    >>> hash2 = ssdeeper.hash('Also called fuzzy hashes, CTPH can match inputs that have homologies.')
     >>> hash2
-    '3:AXGBicFlIHBGcL6wCrFQEv:AXGH6xLsr2C'
+    '3:AN8gu5QklJuXgcGwFEBQJaL:VglxFkL'
 
 The ``compare`` function returns the match between 2 hashes, an integer value from 0 (no match) to 100.
 
 .. code-block:: pycon
 
-    >>> ssdeep.compare(hash1, hash2)
-    22
+    >>> ssdeeper.compare(hash1, hash2)
+    28
 
 
-More examples are available in the `python-ssdeep documentation`_.
+More examples are available in the `python-ssdeeper documentation`_.
 
 Install
 =======
@@ -71,16 +60,11 @@ If all requirements are met it is possible to install the wrapper by using pip o
 
 .. code-block:: console
 
-    $ pip install ssdeep
+    $ pip install git+https://codeberg.org/DFIR/python-ssdeeper
 
-The build will fail if the ssdeep library isn't installed.
-To use the included version of the ssdeep library use the following command.
+The build will always use the included version of the ssdeep library.
 
-.. code-block:: console
-
-    $ BUILD_LIB=1 pip install ssdeep
-
-For more information have a look at the `python-ssdeep documentation`_.
+For more information have a look at the `python-ssdeeper documentation`_.
 
 Tested on ...
 =============
@@ -92,7 +76,7 @@ Tested on ...
 Documentation
 =============
 
-Feel free to use the prebuild `python-ssdeep documentation`_ or use the steps below to build the documentation.
+Feel free to use the prebuild `python-ssdeeper documentation`_ or use the steps below to build the documentation.
 
 .. code-block:: console
 
@@ -110,3 +94,4 @@ This wrapper includes the unchanged source distribution of `ssdeep version 2.14.
 .. _ssdeep by Jesse Kornblum: https://ssdeep-project.github.io/ssdeep/
 .. _ssdeep version 2.14.1: https://github.com/ssdeep-project/ssdeep/releases/tag/release-2.14.1
 .. _python-ssdeep documentation: https://python-ssdeep.readthedocs.io
+.. _ssdeeper version 2.14.1: https://github.com/fkie-cad/ssdeeper

@@ -7,11 +7,11 @@ import os
 from typing import Union
 
 # Ignore flake8 F401 warning for unused vars
-from ssdeep.__about__ import (  # noqa: F401
+from ssdeeper.__about__ import (  # noqa: F401
     __author__, __copyright__, __email__, __license__, __summary__, __title__,
     __uri__, __version__
 )
-from ssdeep._libfuzzy import ffi, lib
+from ssdeeper._libfuzzy import ffi, lib
 
 
 class BaseError(Exception):
@@ -45,9 +45,9 @@ class BaseHash(object):
         """
         The canonical name of this hash
 
-        :return: ssdeep
+        :return: ssdeeper
         """
-        return "ssdeep"
+        return "ssdeeper"
 
     def digest(self, elimseq: bool = False, notrunc: bool = False):
         raise NotImplementedError
@@ -55,7 +55,7 @@ class BaseHash(object):
 
 class Hash(BaseHash):
     """
-    Hashlib like object. It is only supported with ssdeep/libfuzzy >= 2.10.
+    Hashlib like object. It is only supported with ssdeeper/libfuzzy >= 2.10.
 
     :raises InternalError: If lib returns internal error
     :raises NotImplementedError: Required functions are not available
@@ -64,7 +64,7 @@ class Hash(BaseHash):
         self._state = ffi.NULL
 
         if not hasattr(lib, "fuzzy_new"):
-            raise NotImplementedError("Only supported with ssdeep >= 2.10")
+            raise NotImplementedError("Only supported with ssdeeper >= 2.10")
 
         self._state = lib.fuzzy_new()
         if self._state == ffi.NULL:
@@ -149,7 +149,7 @@ class Hash(BaseHash):
 class PseudoHash(BaseHash):
     """
     Hashlib like object. Use this class only if Hash() isn't supported by your
-    ssdeep/libfuzzy library. This class stores the provided data in memory, so
+    ssdeeper/libfuzzy library. This class stores the provided data in memory, so
     be careful when hashing large files.
 
     """

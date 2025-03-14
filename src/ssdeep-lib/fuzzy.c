@@ -31,6 +31,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <string.h>
 
 #include "fuzzy.h"
@@ -44,15 +45,18 @@
 #define unlikely(x) x
 #endif
 
-#define ROLLING_WINDOW 7
-#define MIN_BLOCKSIZE 3
-#define HASH_INIT 0x27
-#define NUM_BLOCKHASHES 31
+
+#define NUM_BLOCKHASHES 16
+#define ROLLING_WINDOW 	7
+#define DJB2_PRIME 		(uint32_t)pow(33, ROLLING_WINDOW-1)
+#define	DJB2_TMP		(uint32_t)DJB2_PRIME * 33 * 5381
+#define MIN_BLOCKSIZE 	3
+#define HASH_INIT 		0x27
 
 // Enable bit-parallel string processing only if bit-parallel algorithms
 // are enabled and considered to be efficient.
 #if !defined(SSDEEP_DISABLE_POSITION_ARRAY) || !SSDEEP_DISABLE_POSITION_ARRAY
-#if SPAMSUM_LENGTH <= 64 && CHAR_MIN >= -256 && CHAR_MAX <= 256 && (CHAR_MAX - CHAR_MIN + 1) <= 256
+#if SPAMSUM_LENGTH <= 128 && CHAR_MIN >= -256 && CHAR_MAX <= 256 && (CHAR_MAX - CHAR_MIN + 1) <= 256
 #define SSDEEP_ENABLE_POSITION_ARRAY
 #endif
 #endif
@@ -60,9 +64,11 @@
 struct roll_state
 {
   unsigned char window[ROLLING_WINDOW];
-  uint32_t h1, h2, h3;
+  uint32_t hval;
   uint32_t n;
 };
+
+static uint32_t roll_sum(const struct roll_state *self);
 
 static void roll_init(/*@out@*/ struct roll_state *self)
 {
@@ -70,38 +76,24 @@ static void roll_init(/*@out@*/ struct roll_state *self)
 }
 
 /*
- * a rolling hash, based on the Adler checksum. By using a rolling hash
+ * a rolling hash, based on the djb2 algorithm. By using a rolling hash
  * we can perform auto resynchronisation after inserts/deletes
-
- * internally, h1 is the sum of the bytes in the window and h2
- * is the sum of the bytes times the index
-
- * h3 is a shift/xor based rolling hash, and is mostly needed to ensure that
- * we can cope with large blocksize values
  */
 static void roll_hash(struct roll_state *self, unsigned char c)
 {
-  self->h2 -= self->h1;
-  self->h2 += ROLLING_WINDOW * (uint32_t)c;
-
-  self->h1 += (uint32_t)c;
-  self->h1 -= (uint32_t)self->window[self->n];
-
+  self->hval -= (uint32_t)self->window[self->n] * DJB2_PRIME;
   self->window[self->n] = c;
+  self->hval += self->hval << 5;
+  self->hval += (uint32_t)c;
   self->n++;
-  if (self->n == ROLLING_WINDOW)
-    self->n = 0;
-
-  /* The original spamsum AND'ed this value with 0xFFFFFFFF which
-   * in theory should have no effect. This AND has been removed
-   * for performance (jk) */
-  self->h3 <<= 5;
-  self->h3 ^= c;
+  if (self->n == ROLLING_WINDOW){
+	  self->n = 0;
+  }
 }
 
 static uint32_t roll_sum(const struct roll_state *self)
 {
-  return self->h1 + self->h2 + self->h3;
+  return (uint32_t)(self->hval + DJB2_TMP);
 }
 
 /* A simple non-rolling hash, based on the FNV hash. */
@@ -120,8 +112,7 @@ struct blockhash_context
 {
   unsigned int dindex;
   char digest[SPAMSUM_LENGTH];
-  char halfdigest;
-  char h, halfh;
+  char h;
 };
 
 struct fuzzy_state
@@ -140,9 +131,12 @@ struct fuzzy_state
 #define FUZZY_STATE_NEED_LASTHASH  1u
 #define FUZZY_STATE_SIZE_FIXED     2u
 
-#define SSDEEP_BS(index) (((uint32_t)MIN_BLOCKSIZE) << (index))
+uint32_t SSDEEP_BS[16] = {3, 12, 48, 192, 768, 3072, 12288, 49152,
+		196608, 786432, 3145728, 12582912, 50331648, 201326592,
+		805306368, 3221225472};
+
 #define SSDEEP_TOTAL_SIZE_MAX \
-  ((uint_least64_t)SSDEEP_BS(NUM_BLOCKHASHES-1) * SPAMSUM_LENGTH)
+  ((uint_least64_t)SSDEEP_BS[NUM_BLOCKHASHES-1] * SPAMSUM_LENGTH)
 
 /*@only@*/ /*@null@*/ struct fuzzy_state *fuzzy_new(void)
 {
@@ -154,9 +148,7 @@ struct fuzzy_state
   self->bhend = 1;
   self->bhendlimit = NUM_BLOCKHASHES - 1;
   self->bh[0].h = HASH_INIT;
-  self->bh[0].halfh = HASH_INIT;
   self->bh[0].digest[0] = '\0';
-  self->bh[0].halfdigest = '\0';
   self->bh[0].dindex = 0;
   self->total_size = 0;
   self->reduce_border = (uint_least64_t)MIN_BLOCKSIZE * SPAMSUM_LENGTH;
@@ -196,7 +188,7 @@ int fuzzy_set_total_input_length(struct fuzzy_state *state, uint_least64_t total
   }
   state->flags |= FUZZY_STATE_SIZE_FIXED;
   state->fixed_size = total_fixed_length;
-  while ((uint_least64_t)SSDEEP_BS(bi) * SPAMSUM_LENGTH < total_fixed_length)
+  while ((uint_least64_t)SSDEEP_BS[bi] * SPAMSUM_LENGTH < total_fixed_length)
   {
     ++bi;
     if (bi == NUM_BLOCKHASHES - 2)
@@ -211,15 +203,13 @@ int fuzzy_set_total_input_length(struct fuzzy_state *state, uint_least64_t total
 static void fuzzy_try_fork_blockhash(struct fuzzy_state *self)
 {
   struct blockhash_context *obh, *nbh;
-  assert(self->bhend > 0);
+  //assert(self->bhend > 0);
   obh = self->bh + (self->bhend - 1);
   if (self->bhend <= self->bhendlimit)
   {
     nbh = obh + 1;
     nbh->h = obh->h;
-    nbh->halfh = obh->halfh;
     nbh->digest[0] = '\0';
-    nbh->halfdigest = '\0';
     nbh->dindex = 0;
     ++self->bhend;
   }
@@ -233,7 +223,7 @@ static void fuzzy_try_fork_blockhash(struct fuzzy_state *self)
 
 static void fuzzy_try_reduce_blockhash(struct fuzzy_state *self)
 {
-  assert(self->bhstart < self->bhend);
+  //assert(self->bhstart < self->bhend);
   if (self->bhend - self->bhstart < 2)
     /* Need at least two working hashes. */
     return;
@@ -241,13 +231,14 @@ static void fuzzy_try_reduce_blockhash(struct fuzzy_state *self)
     /* Initial blocksize estimate would select this or a smaller
      * blocksize. */
     return;
-  if (self->bh[self->bhstart + 1].dindex < SPAMSUM_LENGTH / 2)
+  if (self->bh[self->bhstart + 1].dindex < SPAMSUM_LENGTH / 4)
     /* Estimate adjustment would select this blocksize. */
     return;
   /* At this point we are clearly no longer interested in the
    * start_blocksize. Get rid of it. */
   ++self->bhstart;
-  self->reduce_border *= 2;
+  self->reduce_border *= 4;
+  self->rollmask = self->rollmask * 2 + 1;
   self->rollmask = self->rollmask * 2 + 1;
 }
 
@@ -268,7 +259,6 @@ static void fuzzy_engine_step(struct fuzzy_state *self, unsigned char c)
   for (i = self->bhstart; i < self->bhend; ++i)
   {
     self->bh[i].h = sum_hash(c, self->bh[i].h);
-    self->bh[i].halfh = sum_hash(c, self->bh[i].halfh);
   }
   if (self->flags & FUZZY_STATE_NEED_LASTHASH)
     self->lasth = sum_hash(c, self->lasth);
@@ -282,6 +272,7 @@ static void fuzzy_engine_step(struct fuzzy_state *self, unsigned char c)
   /* Delay computation of modulo as possible. */
   if (horg % (uint32_t)MIN_BLOCKSIZE)
     return;
+  h >>= self->bhstart;
   h >>= self->bhstart;
 
   i = self->bhstart;
@@ -297,7 +288,6 @@ static void fuzzy_engine_step(struct fuzzy_state *self, unsigned char c)
     }
     self->bh[i].digest[self->bh[i].dindex] =
       b64[self->bh[i].h];
-    self->bh[i].halfdigest = b64[self->bh[i].halfh];
     if (self->bh[i].dindex < SPAMSUM_LENGTH - 1) {
       /* We can have a problem with the tail overflowing. The
        * easiest way to cope with this is to only reset the
@@ -307,13 +297,12 @@ static void fuzzy_engine_step(struct fuzzy_state *self, unsigned char c)
        * */
       self->bh[i].digest[++(self->bh[i].dindex)] = '\0';
       self->bh[i].h = HASH_INIT;
-      if (self->bh[i].dindex < SPAMSUM_LENGTH / 2) {
-	self->bh[i].halfh = HASH_INIT;
-	self->bh[i].halfdigest = '\0';
-      }
     }
     else
       fuzzy_try_reduce_blockhash(self);
+    if (h & 1)
+      break;
+    h >>= 1;
     if (h & 1)
       break;
     h >>= 1;
@@ -357,6 +346,31 @@ static int memcpy_eliminate_sequences(char *dst,
   return n;
 }
 
+int fuzzy_block_digest(const struct fuzzy_state *self, unsigned int bi, int remain,
+		unsigned int flags, char **result) {
+	uint32_t h = roll_sum(&self->roll);
+	int i = (int) self->bh[bi].dindex;
+	assert(i <= remain);
+	if ((flags & FUZZY_FLAG_ELIMSEQ) != 0)
+		i = memcpy_eliminate_sequences(*result, self->bh[bi].digest, i);
+	else
+		memcpy(*result, self->bh[bi].digest, (size_t) i);
+
+	*result += i;
+	remain -= i;
+	if ((h+1)==0 || ((h+1) % SSDEEP_BS[bi])) {
+		assert(remain > 0);
+		**result = b64[self->bh[bi].h];
+		if ((flags & FUZZY_FLAG_ELIMSEQ) == 0 || i < 3
+				|| **result != *result[-1] || **result != *result[-2]
+				|| **result != *result[-3]) {
+			++*result;
+			--remain;
+		}
+	}
+	return remain;
+}
+
 int fuzzy_digest(const struct fuzzy_state *self,
 		 /*@out@*/ char *result,
 		 unsigned int flags)
@@ -365,7 +379,7 @@ int fuzzy_digest(const struct fuzzy_state *self,
   uint32_t h = roll_sum(&self->roll);
   int i, remain = FUZZY_MAX_RESULT - 1; /* Exclude terminating '\0'. */
   /* Verify that our elimination was not overeager. */
-  assert(bi == 0 || (uint_least64_t)SSDEEP_BS(bi) / 2 * SPAMSUM_LENGTH <
+  assert(bi == 0 || (uint_least64_t)SSDEEP_BS[bi] / 4 * SPAMSUM_LENGTH <
 	 self->total_size);
 
   if (self->total_size > SSDEEP_TOTAL_SIZE_MAX) {
@@ -380,103 +394,34 @@ int fuzzy_digest(const struct fuzzy_state *self,
     return -1;
   }
   /* Initial blocksize guess. */
-  while ((uint_least64_t)SSDEEP_BS(bi) * SPAMSUM_LENGTH < self->total_size)
+  while ((uint_least64_t)SSDEEP_BS[bi] * SPAMSUM_LENGTH < self->total_size)
     ++bi;
   /* Adapt blocksize guess to actual digest length. */
   if (bi >= self->bhend)
     bi = self->bhend - 1;
-  while (bi > self->bhstart && self->bh[bi].dindex < SPAMSUM_LENGTH / 2)
+  while (bi > self->bhstart && self->bh[bi].dindex < SPAMSUM_LENGTH / 4)
     --bi;
-  assert (!(bi > 0 && self->bh[bi].dindex < SPAMSUM_LENGTH / 2));
+  assert (!(bi > 0 && self->bh[bi].dindex < SPAMSUM_LENGTH / 4));
 
-  i = snprintf(result, (size_t)remain, "%lu:", (unsigned long)SSDEEP_BS(bi));
+  i = snprintf(result, (size_t)remain, "%lu:", (unsigned long)SSDEEP_BS[bi]);
   if (i <= 0)
     /* Maybe snprintf has set errno here? */
     return -1;
   assert(i < remain);
   remain -= i;
   result += i;
-  i = (int)self->bh[bi].dindex;
-  assert(i <= remain);
-  if ((flags & FUZZY_FLAG_ELIMSEQ) != 0)
-    i = memcpy_eliminate_sequences(result, self->bh[bi].digest, i);
-  else
-    memcpy(result, self->bh[bi].digest, (size_t)i);
-  result += i;
-  remain -= i;
-  if (h != 0)
-  {
-    assert(remain > 0);
-    *result = b64[self->bh[bi].h];
-    if((flags & FUZZY_FLAG_ELIMSEQ) == 0 || i < 3 ||
-       *result != result[-1] ||
-       *result != result[-2] ||
-       *result != result[-3]) {
-      ++result;
-      --remain;
-    }
-  }
-  else if (self->bh[bi].digest[self->bh[bi].dindex] != '\0') {
-    assert(remain > 0);
-    *result = self->bh[bi].digest[self->bh[bi].dindex];
-    if((flags & FUZZY_FLAG_ELIMSEQ) == 0 || i < 3 ||
-       *result != result[-1] ||
-       *result != result[-2] ||
-       *result != result[-3]) {
-      ++result;
-      --remain;
-    }
-  }
+
+  remain = fuzzy_block_digest(self, bi, remain, flags, &result);
+
   assert(remain > 0);
   *result++ = ':';
   --remain;
   if (bi < self->bhend - 1)
   {
     ++bi;
-    i = (int)self->bh[bi].dindex;
-    if ((flags & FUZZY_FLAG_NOTRUNC) == 0 &&
-	i > SPAMSUM_LENGTH / 2 - 1)
-      i = SPAMSUM_LENGTH / 2 - 1;
-    assert(i <= remain);
-    if ((flags & FUZZY_FLAG_ELIMSEQ) != 0)
-      i = memcpy_eliminate_sequences(result,
-				     self->bh[bi].digest, i);
-    else
-      memcpy(result, self->bh[bi].digest, (size_t)i);
-    result += i;
-    remain -= i;
-    if (h != 0) {
-      assert(remain > 0);
-      h = (flags & FUZZY_FLAG_NOTRUNC) != 0 ? self->bh[bi].h :
-	self->bh[bi].halfh;
-      *result = b64[h];
-      if ((flags & FUZZY_FLAG_ELIMSEQ) == 0 || i < 3 ||
-	  *result != result[-1] ||
-	  *result != result[-2] ||
-	  *result != result[-3])
-      {
-	++result;
-	--remain;
-      }
-    }
-    else {
-      i = (flags & FUZZY_FLAG_NOTRUNC) != 0 ?
-	  self->bh[bi].digest[self->bh[bi].dindex] : self->bh[bi].halfdigest;
-      if (i != '\0') {
-	assert(remain > 0);
-	*result = i;
-	if ((flags & FUZZY_FLAG_ELIMSEQ) == 0 || i < 3 ||
-	    *result != result[-1] ||
-	    *result != result[-2] ||
-	    *result != result[-3])
-	{
-	  ++result;
-	  --remain;
-	}
-      }
-    }
+    remain = fuzzy_block_digest(self, bi, remain, flags, &result);
   }
-  else if (h != 0)
+  else if ((h+1)==0 || ((h+1) % SSDEEP_BS[bi]))
   {
     assert(bi == 0 || bi == NUM_BLOCKHASHES - 1);
     assert(remain > 0);
@@ -664,14 +609,13 @@ static int has_common_substring(const char *s1, size_t s1len, const char *s2, si
 }
 
 
-
-#ifdef SSDEEP_ENABLE_POSITION_ARRAY
+#if defined(SSDEEP_ENABLE_POSITION_ARRAY) && defined(__SIZEOF_INT128__)
 
 // position array-based version of has_common_substring
-static int has_common_substring_pa(const unsigned long long *parray, const char *s2, size_t s2len)
+static int has_common_substring_pa(const __uint128_t *parray, const char *s2, size_t s2len)
 {
-  unsigned long long D;
-  // ROLLING_WINDOW <= s2len <= 64
+  __uint128_t D;
+  // ROLLING_WINDOW <= s2len <= 128
   size_t r = ROLLING_WINDOW - 1;
   size_t l;
   const char *ch;
@@ -696,15 +640,15 @@ static int has_common_substring_pa(const unsigned long long *parray, const char 
 }
 
 // position array-based version of edit_distn
-static int edit_distn_pa(const unsigned long long *parray, size_t s1len, const char *s2, size_t s2len)
+static int edit_distn_pa(const __uint128_t *parray, size_t s1len, const char *s2, size_t s2len)
 {
-  unsigned long long pv, nv, ph, nh, zd, mt, x, y;
-  unsigned long long msb;
+  __uint128_t pv, nv, ph, nh, zd, mt, x, y;
+  __uint128_t msb;
   size_t i;
-  // 0 < s1len <= 64
+  // 0 < s1len <= 128
   int cur = s1len;
-  msb = 1ull << (s1len - 1);
-  pv = -1;
+  msb = (__uint128_t)1 << (s1len - 1);
+  pv = (__uint128_t)0xFFFFFFFFFFFFFFFF << 64 | (__uint128_t)0xFFFFFFFFFFFFFFFF;
   nv = 0;
   for (i = 0; i < s2len; i++)
   {
@@ -713,12 +657,12 @@ static int edit_distn_pa(const unsigned long long *parray, size_t s1len, const c
     nh = pv & zd;
     if (nh & msb)
       --cur;
-    x  = nv | ~(pv | zd) | (pv & ~mt & 1ull);
+    x  = nv | ~(pv | zd) | (pv & ~mt & (__uint128_t)1);
     y  = (pv - nh) >> 1;
     ph = (x + y) ^ y;
     if (ph & msb)
       ++cur;
-    x  = (ph << 1) | 1ull;
+    x  = (ph << 1) | (__uint128_t)1;
     nv = x & zd;
     pv = (nh << 1) | ~(x | zd) | (x & (pv - nh));
   }
@@ -786,8 +730,8 @@ static uint32_t score_strings(const char *s1,
 {
   uint32_t score;
 
-#ifdef SSDEEP_ENABLE_POSITION_ARRAY
-  unsigned long long parray[CHAR_MAX - CHAR_MIN + 1];
+#if defined(SSDEEP_ENABLE_POSITION_ARRAY) && defined(__SIZEOF_INT128__)
+  __uint128_t parray[CHAR_MAX - CHAR_MIN + 1];
   size_t i;
   // skip short strings
   if (s1len < ROLLING_WINDOW)
@@ -797,19 +741,12 @@ static uint32_t score_strings(const char *s1,
   // construct position array for faster string algorithms
   memset(parray, 0, sizeof(parray));
   for (i = 0; i < s1len; i++)
-    parray[s1[i] - CHAR_MIN] |= 1ull << i;
-  // the two strings must have a common substring of length
-  // ROLLING_WINDOW to be candidates
-  if (!has_common_substring_pa(parray, s2, s2len))
-    return 0;
+    parray[s1[i] - CHAR_MIN] |= (__uint128_t)1 << i; 
+
   // compute the edit distance between the two strings. The edit distance gives
   // us a pretty good idea of how closely related the two strings are
   score = edit_distn_pa(parray, s1len, s2, s2len);
 #else
-  // the two strings must have a common substring of length
-  // ROLLING_WINDOW to be candidates
-  if (!has_common_substring(s1, s1len, s2, s2len))
-    return 0;
   // compute the edit distance between the two strings. The edit distance gives
   // us a pretty good idea of how closely related the two strings are
   score = edit_distn(s1, s1len, s2, s2len);
@@ -871,8 +808,8 @@ int fuzzy_compare(const char *str1, const char *str2)
   // apples to oranges. This isn't an 'error' per se. We could
   // have two valid signatures, but they can't be compared.
   if (block_size1 != block_size2 &&
-      (block_size1 > ULONG_MAX / 2 || block_size1*2 != block_size2) &&
-      (block_size1 % 2 == 1 || block_size1 / 2 != block_size2)) {
+      (block_size1 > ULONG_MAX / 4 || block_size1*4 != block_size2) &&
+      (block_size1 % 4 == 1 || block_size1 / 4 != block_size2)) {
     return 0;
   }
 
@@ -932,14 +869,14 @@ int fuzzy_compare(const char *str1, const char *str2)
   // each signature has a string for two block sizes. We now
   // choose how to combine the two block sizes. We checked above
   // that they have at least one block size in common
-  if (block_size1 <= ULONG_MAX / 2) {
+  if (block_size1 <= ULONG_MAX / 4) {
     if (block_size1 == block_size2) {
       uint32_t score1, score2;
       score1 = score_strings(s1b1, s1b1len, s2b1, s2b1len, block_size1);
-      score2 = score_strings(s1b2, s1b2len, s2b2, s2b2len, block_size1*2);
+      score2 = score_strings(s1b2, s1b2len, s2b2, s2b2len, block_size1*4);
       score = MAX(score1, score2);
     }
-    else if (block_size1 * 2 == block_size2) {
+    else if (block_size1 * 4 == block_size2) {
       score = score_strings(s2b1, s2b1len, s1b2, s1b2len, block_size2);
     }
     else {
@@ -950,7 +887,7 @@ int fuzzy_compare(const char *str1, const char *str2)
     if (block_size1 == block_size2) {
       score = score_strings(s1b1, s1b1len, s2b1, s2b1len, block_size1);
     }
-    else if (block_size1 % 2 == 0 && block_size1 / 2 == block_size2) {
+    else if (block_size1 % 4 == 0 && block_size1 / 4 == block_size2) {
       score = score_strings(s1b1, s1b1len, s2b2, s2b2len, block_size1);
     }
     else {

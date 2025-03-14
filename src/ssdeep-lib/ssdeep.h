@@ -23,8 +23,8 @@
 // This is a kludge, but it works.
 #define __progname "ssdeep"
 
-#define SSDEEPV1_0_HEADER        "ssdeep,1.0--blocksize:hash:hash,filename"
-#define SSDEEPV1_1_HEADER        "ssdeep,1.1--blocksize:hash:hash,filename"
+#define SSDEEPV1_0_HEADER        "ssdeeper,1.0--blocksize:hash:hash,filename"
+#define SSDEEPV1_1_HEADER        "ssdeeper,1.1--blocksize:hash:hash,filename"
 #define OUTPUT_FILE_HEADER     SSDEEPV1_1_HEADER
 
 // We print a warning for files smaller than this size

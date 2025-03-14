@@ -1,177 +1,177 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import pytest
-import ssdeep
+import ssdeeper
 
 
 class TestFunctionsFail(object):
     def test_compare(self):
         with pytest.raises(TypeError):
-            ssdeep.compare(
-                "3:AXGBicFlgVNhBGcL6wCrFQEv:AXGHsNhxLsr2C",
+            ssdeeper.compare(
+                "3:AN8gu5QklJgVNhyEgcGwFEBQJaL:VgDhxFkL",
                 None
             )
 
         with pytest.raises(TypeError):
-            ssdeep.compare(
+            ssdeeper.compare(
                 None,
                 "3:AXGBicFlIHBGcL6wCrFQEv:AXGH6xLsr2C"
             )
 
-        with pytest.raises(ssdeep.InternalError):
-            ssdeep.compare(
-                "3:AXGBicFlgVNhBGcL6wCrFQEv:AXGHsNhxLsr2C",
+        with pytest.raises(ssdeeper.InternalError):
+            ssdeeper.compare(
+                "3:AN8gu5QklJgVNhyEgcGwFEBQJaL:VgDhxFkL",
                 ""
             )
 
     def test_hash(self):
         with pytest.raises(TypeError):
-            ssdeep.hash(None)
+            ssdeeper.hash(None)
 
         with pytest.raises(TypeError):
-            ssdeep.hash(1234)
+            ssdeeper.hash(1234)
 
 
 class TestFunctions(object):
     def test_compare(self):
-        res = ssdeep.compare(
-            "3:AXGBicFlgVNhBGcL6wCrFQEv:AXGHsNhxLsr2C",
+        res = ssdeeper.compare(
+            "3:AN8gu5QklJgVNhyEgcGwFEBQJaL:VgDhxFkL",
             "3:AXGBicFlIHBGcL6wCrFQEv:AXGH6xLsr2C"
         )
-        assert res == 22
+        assert res == 44
 
-        res = ssdeep.compare(
-            b"3:AXGBicFlgVNhBGcL6wCrFQEv:AXGHsNhxLsr2C",
+        res = ssdeeper.compare(
+            b"3:AN8gu5QklJgVNhyEgcGwFEBQJaL:VgDhxFkL",
             b"3:AXGBicFlIHBGcL6wCrFQEv:AXGH6xLsr2C"
         )
-        assert res == 22
+        assert res == 44
 
     def test_hash_1(self):
-        res = ssdeep.hash("Also called fuzzy hashes, Ctph can match inputs that have homologies.")
-        assert res == "3:AXGBicFlgVNhBGcL6wCrFQEv:AXGHsNhxLsr2C"
+        res = ssdeeper.hash("Also called fuzzy hashes, Ctph can match inputs that have homologies.")
+        assert res == "3:AN8gu5QklJgVNhyEgcGwFEBQJaL:VgDhxFkL"
 
     def test_hash_2(self):
-        res = ssdeep.hash("Also called fuzzy hashes, CTPH can match inputs that have homologies.")
-        assert res == "3:AXGBicFlIHBGcL6wCrFQEv:AXGH6xLsr2C"
+        res = ssdeeper.hash("Also called fuzzy hashes, CTPH can match inputs that have homologies.")
+        assert res == "3:AN8gu5QklJuXgcGwFEBQJaL:VglxFkL"
 
     def test_hash_3(self):
-        res = ssdeep.hash(b"Also called fuzzy hashes, CTPH can match inputs that have homologies.")
-        assert res == "3:AXGBicFlIHBGcL6wCrFQEv:AXGH6xLsr2C"
+        res = ssdeeper.hash(b"Also called fuzzy hashes, CTPH can match inputs that have homologies.")
+        assert res == "3:AN8gu5QklJuXgcGwFEBQJaL:VglxFkL"
 
     def test_hash_from_file(self):
         with pytest.raises(IOError):
-            ssdeep.hash_from_file("tests/files/")
+            ssdeeper.hash_from_file("tests/files/")
 
         with pytest.raises(IOError):
-            ssdeep.hash_from_file("tests/files/file-does-not-exist.txt")
+            ssdeeper.hash_from_file("tests/files/file-does-not-exist.txt")
 
-        res = ssdeep.hash_from_file("tests/files/file.txt")
-        assert res == "3:AXGBicFlgVNhBGcL6wCrFQE3:AXGHsNhxLsr2s"
+        res = ssdeeper.hash_from_file("tests/files/file.txt")
+        assert res == "3:AN8gu5QklJgVNhyEgcGwFEBQJab:VgDhxFkb"
 
 
 class TestHashClass(object):
     def test_copy(self):
-        obj = ssdeep.Hash()
+        obj = ssdeeper.Hash()
         obj.update("Also called fuzzy hashes, ")
         new_obj = obj.copy()
-        assert isinstance(new_obj, ssdeep.Hash)
+        assert isinstance(new_obj, ssdeeper.Hash)
 
         res = obj.digest()
         new_res = new_obj.digest()
-        assert res == "3:AXGBicFlF:AXGHR"
-        assert new_res == "3:AXGBicFlF:AXGHR"
+        assert res == "3:AN8gu5QklJF:Vg6"
+        assert new_res == "3:AN8gu5QklJF:Vg6"
 
         # Update only original object
         obj.update("Ctph can match inputs that have homologies.")
 
         res = obj.digest()
         new_res = new_obj.digest()
-        assert res == "3:AXGBicFlgVNhBGcL6wCrFQEv:AXGHsNhxLsr2C"
-        assert new_res == "3:AXGBicFlF:AXGHR"
+        assert res == "3:AN8gu5QklJgVNhyEgcGwFEBQJaL:VgDhxFkL"
+        assert new_res == "3:AN8gu5QklJF:Vg6"
 
         # Update only new object
         new_obj.update("Ctph can match inputs that have homologies.")
         res = obj.digest()
         new_res = new_obj.digest()
-        assert res == "3:AXGBicFlgVNhBGcL6wCrFQEv:AXGHsNhxLsr2C"
-        assert new_res == "3:AXGBicFlgVNhBGcL6wCrFQEv:AXGHsNhxLsr2C"
+        assert res == "3:AN8gu5QklJgVNhyEgcGwFEBQJaL:VgDhxFkL"
+        assert new_res == "3:AN8gu5QklJgVNhyEgcGwFEBQJaL:VgDhxFkL"
 
     def test_hashlib(self):
-        obj = ssdeep.Hash()
-        assert obj.name == "ssdeep"
+        obj = ssdeeper.Hash()
+        assert obj.name == "ssdeeper"
 
         obj.update("Ctph can match inputs that have homologies.")
         assert obj.block_size == 3
 
     def test_update(self):
-        obj = ssdeep.Hash()
+        obj = ssdeeper.Hash()
         obj.update("Also called fuzzy hashes, Ctph can match inputs that have homologies.")
         res = obj.digest()
 
-        assert res == "3:AXGBicFlgVNhBGcL6wCrFQEv:AXGHsNhxLsr2C"
+        assert res == "3:AN8gu5QklJgVNhyEgcGwFEBQJaL:VgDhxFkL"
 
 
 class TestPseudoHashClass(object):
     def test_copy(self):
-        obj = ssdeep.PseudoHash()
+        obj = ssdeeper.PseudoHash()
         obj.update("Also called fuzzy hashes, ")
         new_obj = obj.copy()
-        assert isinstance(new_obj, ssdeep.PseudoHash)
+        assert isinstance(new_obj, ssdeeper.PseudoHash)
 
         res = obj.digest()
         new_res = new_obj.digest()
-        assert res == "3:AXGBicFlF:AXGHR"
-        assert new_res == "3:AXGBicFlF:AXGHR"
+        assert res == "3:AN8gu5QklJF:Vg6"
+        assert new_res == "3:AN8gu5QklJF:Vg6"
 
         # Update only original object
         obj.update("Ctph can match inputs that have homologies.")
 
         res = obj.digest()
         new_res = new_obj.digest()
-        assert res == "3:AXGBicFlgVNhBGcL6wCrFQEv:AXGHsNhxLsr2C"
-        assert new_res == "3:AXGBicFlF:AXGHR"
+        assert res == "3:AN8gu5QklJgVNhyEgcGwFEBQJaL:VgDhxFkL"
+        assert new_res == "3:AN8gu5QklJF:Vg6"
 
         # Update only new object
         new_obj.update("Ctph can match inputs that have homologies.")
         res = obj.digest()
         new_res = new_obj.digest()
-        assert res == "3:AXGBicFlgVNhBGcL6wCrFQEv:AXGHsNhxLsr2C"
-        assert new_res == "3:AXGBicFlgVNhBGcL6wCrFQEv:AXGHsNhxLsr2C"
+        assert res == "3:AN8gu5QklJgVNhyEgcGwFEBQJaL:VgDhxFkL"
+        assert new_res == "3:AN8gu5QklJgVNhyEgcGwFEBQJaL:VgDhxFkL"
 
     def test_hashlib(self):
-        obj = ssdeep.PseudoHash()
-        assert obj.name == "ssdeep"
+        obj = ssdeeper.PseudoHash()
+        assert obj.name == "ssdeeper"
 
         obj.update("Ctph can match inputs that have homologies.")
         assert obj.block_size == 3
 
     def test_update(self):
-        obj = ssdeep.PseudoHash()
+        obj = ssdeeper.PseudoHash()
         obj.update("Also called fuzzy hashes, ")
         obj.update("Ctph can match inputs that have homologies.")
         res = obj.digest()
 
-        assert res == "3:AXGBicFlgVNhBGcL6wCrFQEv:AXGHsNhxLsr2C"
+        assert res == "3:AN8gu5QklJgVNhyEgcGwFEBQJaL:VgDhxFkL"
 
 
 class TestHashClassFail(object):
     def test_update_01(self):
-        obj = ssdeep.Hash()
+        obj = ssdeeper.Hash()
         with pytest.raises(TypeError):
             obj.update(None)
 
     def test_update_02(self):
-        obj = ssdeep.Hash()
+        obj = ssdeeper.Hash()
         with pytest.raises(TypeError):
             obj.update(1234)
 
 
 class TestPseudoHashClassFail(object):
     def test_update_01(self):
-        obj = ssdeep.PseudoHash()
+        obj = ssdeeper.PseudoHash()
         with pytest.raises(TypeError):
             obj.update(None)
 
     def test_update_02(self):
-        obj = ssdeep.PseudoHash()
+        obj = ssdeeper.PseudoHash()
         with pytest.raises(TypeError):
             obj.update(1234)

@@ -21,7 +21,7 @@ try:
 except ImportError:
     sphinx_rtd_theme = None
 
-autodoc_mock_imports = ["cffi", "six", "ssdeep._libfuzzy"]
+autodoc_mock_imports = ["cffi", "six", "ssdeeper._libfuzzy"]
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -64,7 +64,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'python-ssdeep'
+project = 'python-ssdeeper'
 copyright = '2014-2015, DinoTools'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -73,8 +73,8 @@ copyright = '2014-2015, DinoTools'
 #
 # The short X.Y version.
 ver_dict = {}
-with open("../../src/ssdeep/__about__.py") as f:
-    code = compile(f.read(), "../../src/ssdeep/__about__.py", "exec")
+with open("../../src/ssdeeper/__about__.py") as f:
+    code = compile(f.read(), "../../src/ssdeeper/__about__.py", "exec")
     exec(code, ver_dict)
 
 # The full version, including alpha/beta/rc tags.
@@ -205,7 +205,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Pythonssdeepdoc'
+htmlhelp_basename = 'Pythonssdeeperdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -225,7 +225,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'Pythonssdeep.tex', 'Python ssdeep Documentation',
+  ('index', 'Pythonssdeep.tex', 'Python ssdeeper Documentation',
    'DinoTools', 'manual'),
 ]
 
@@ -255,7 +255,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'pythonssdeep', 'Python ssdeep Documentation',
+    ('index', 'pythonssdeeper', 'Python ssdeeper Documentation',
      ['DinoTools'], 1)
 ]
 
@@ -269,8 +269,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'Pythonssdeep', 'Python ssdeep Documentation',
-   'DinoTools', 'Pythonssdeep', 'One line description of project.',
+  ('index', 'Pythonssdeeper', 'Python ssdeeper Documentation',
+   'DinoTools', 'Pythonssdeeper', 'One line description of project.',
    'Miscellaneous'),
 ]
 
@@ -290,7 +290,7 @@ texinfo_documents = [
 # -- Options for Epub output ----------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = 'Python ssdeep'
+epub_title = 'Python ssdeeper'
 epub_author = 'DinoTools'
 epub_publisher = 'DinoTools'
 epub_copyright = '2014, DinoTools'

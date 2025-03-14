@@ -68,11 +68,6 @@ extern "C" {
  *        three identical characters
  */
 #define FUZZY_FLAG_ELIMSEQ 0x1u
-/**
- * @brief fuzzy_digest flag indicating not to truncate the second part to
- *        SPAMSUM_LENGTH/2 characters.
- */
-#define FUZZY_FLAG_NOTRUNC 0x2u
 
 struct fuzzy_state;
 
@@ -214,7 +209,7 @@ extern int fuzzy_hash_filename(const char *filename, /*@out@*/ char * result);
 extern int fuzzy_compare(const char *sig1, const char *sig2);
 
 /** Length of an individual fuzzy hash signature component. */
-#define SPAMSUM_LENGTH 64
+#define SPAMSUM_LENGTH 128
 
 /** The longest possible length for a fuzzy hash signature
  * (without the filename) */

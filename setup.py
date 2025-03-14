@@ -20,9 +20,13 @@ base_dir = os.path.dirname(__file__)
 src_dir = os.path.join(base_dir, "src")
 # sys.path.insert(0, base_dir)
 
-use_system_lib = True
-if os.environ.get("BUILD_LIB") == "1":
-    use_system_lib = False
+# ALWAYS build the library -- we use FKIE's ssdeeper!
+os.environ["BUILD_LIB"] = "1"
+
+#use_system_lib = True
+#if os.environ.get("BUILD_LIB") == "1":
+#    use_system_lib = False
+use_system_lib = False
 
 
 class BuildClib(_build_clib):
@@ -42,6 +46,7 @@ class BuildClib(_build_clib):
 
     def run(self):
         if use_system_lib:
+            sys.exit('!!!ALERT!!! -- THIS DOES NOT USE FKIE LIBS')
             return
 
         build_env = {
@@ -61,7 +66,7 @@ class BuildClib(_build_clib):
 
         # libtoolize: Install required files for automake
         returncode = subprocess.call(
-            "(cd src/ssdeep-lib && libtoolize && autoreconf --force)",
+            "(cd src/ssdeep-lib && automake && libtoolize && autoreconf --force)",
             shell=True
         )
         if returncode != 0:
@@ -82,22 +87,24 @@ class BuildClib(_build_clib):
             "--disable-dependency-tracking",
             "--with-pic",
         ]
-
         returncode = subprocess.call(
             [configure_cmd]
             + configure_flags
             + ["--prefix", os.path.abspath(self.build_clib)],
             cwd="src/ssdeep-lib"
         )
+        if returncode != 0:
+            sys.exit("Failed while building ssdeep lib.")
         returncode = subprocess.call(
             ["make"],
             cwd="src/ssdeep-lib"
         )
+        if returncode != 0:
+            sys.exit("Failed while building ssdeep lib.")
         returncode = subprocess.call(
             ["make", "install"],
             cwd="src/ssdeep-lib"
         )
-
         if returncode != 0:
             sys.exit("Failed while building ssdeep lib.")
 
@@ -138,7 +145,7 @@ def get_objects():
 
 
 about = {}
-with open(os.path.join(src_dir, "ssdeep", "__about__.py")) as f:
+with open(os.path.join(src_dir, "ssdeeper", "__about__.py")) as f:
     exec(f.read(), about)
 
 with open(os.path.join(base_dir, "README.rst")) as f:
@@ -175,11 +182,14 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    keywords="ssdeep",
+    keywords="ssdeeper",
     install_requires=[
         "cffi>=1.0.0",
     ],
@@ -198,10 +208,10 @@ setup(
         ],
     },
     packages=[
-        "ssdeep"
+        "ssdeeper"
     ],
     include_package_data=True,
-    cffi_modules=["src/ssdeep/_build.py:ffi"],
+    cffi_modules=["src/ssdeeper/_build.py:ffi"],
     package_dir={"": "src"},
     cmdclass={
         "build_clib": BuildClib,

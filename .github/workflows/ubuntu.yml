@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        container: ["ubuntu:18.04", "ubuntu:20.04"]
+        container: ["ubuntu:20.04", "ubuntu:22.04", "ubuntu:24.04"]
     container:
       image: ${{ matrix.container }}
     steps:
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        container: ["ubuntu:18.04", "ubuntu:20.04"]
+        container: ["ubuntu:20.04", "ubuntu:22.04", "ubuntu:24.04"]
     container:
       image: ${{ matrix.container }}
     steps:
