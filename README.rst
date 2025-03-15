@@ -9,25 +9,10 @@ have sequences of identical bytes in the same order, although bytes in between t
 content and length.
 
 The ssdeeper wrapper uses the ssdeep libraries as augmented by Fraunhofer FKIE. 
-The specific flavor used is `ssdeep-refactored-4b-djb2-nocommonsub`.
-
-.. image:: https://github.com/sweigmann/python-ssdeeper/actions/workflows/codeql-analysis.yml/badge.svg?branch=master
-    :target: https://github.com/sweigmann/python-ssdeeper/actions/workflows/codeql-analysis.yml
-    :alt: CodeQL tests
-
-.. image:: https://github.com/sweigmann/python-ssdeeper/actions/workflows/python-linux.yml/badge.svg?branch=master
-    :target: https://github.com/sweigmann/python-ssdeeper/actions/workflows/python-linux.yml
-    :alt: CI test status on Linux
-
-.. image:: https://github.com/sweigmann/python-ssdeeper/actions/workflows/debian.yml/badge.svg?branch=master
-    :target: https://github.com/sweigmann/python-ssdeeper/actions/workflows/debian.yml
-    :alt: CI test status on Debian
-
-.. image:: https://github.com/sweigmann/python-ssdeeper/actions/workflows/ubuntu.yml/badge.svg?branch=master
-    :target: https://github.com/sweigmann/python-ssdeeper/actions/workflows/ubuntu.yml
-    :alt: CI test status on Debian
-
-
+The specific flavor used is `ssdeep-refactored-4b-djb2-nocommonsub`_. 
+Scientific papers and slides on Fraunhofer FKIE's `ssdeeper version 2.14.1`_ 
+may be found on the `DFRWS publication`_ websites. 
+ 
 How to use it
 =============
 
@@ -51,7 +36,7 @@ The ``compare`` function returns the match between 2 hashes, an integer value fr
     28
 
 
-More examples are available in the `python-ssdeeper documentation`_.
+More examples are available in the `python-ssdeep documentation`_.
 
 Install
 =======
@@ -64,7 +49,7 @@ If all requirements are met it is possible to install the wrapper by using pip o
 
 The build will always use the included version of the ssdeep library.
 
-For more information have a look at the `python-ssdeeper documentation`_.
+For more information have a look at the `python-ssdeep documentation`_.
 
 Tested on ...
 =============
@@ -76,7 +61,7 @@ Tested on ...
 Documentation
 =============
 
-Feel free to use the prebuild `python-ssdeeper documentation`_ or use the steps below to build the documentation.
+Feel free to use the prebuild `python-ssdeep documentation`_ or use the steps below to build the documentation.
 
 .. code-block:: console
 
@@ -95,3 +80,5 @@ This wrapper includes the unchanged source distribution of `ssdeep version 2.14.
 .. _ssdeep version 2.14.1: https://github.com/ssdeep-project/ssdeep/releases/tag/release-2.14.1
 .. _python-ssdeep documentation: https://python-ssdeep.readthedocs.io
 .. _ssdeeper version 2.14.1: https://github.com/fkie-cad/ssdeeper
+.. _ssdeep-refactored-4b-djb2-nocommonsub: https://github.com/fkie-cad/ssdeeper/tree/ssdeep-refactored-4b-djb2-nocommonsub
+.. _DFRWS publication: https://dfrws.org/presentation/ssdeeper-evaluating-and-improving-ssdeep/
