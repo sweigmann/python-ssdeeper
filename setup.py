@@ -66,7 +66,7 @@ class BuildClib(_build_clib):
 
         # libtoolize: Install required files for automake
         returncode = subprocess.call(
-            "(cd src/ssdeep-lib && automake && libtoolize && autoreconf --force)",
+            "(cd src/ssdeep-lib && autoreconf -vfi && automake && libtoolize && autoreconf --force)",
             shell=True
         )
         if returncode != 0:
