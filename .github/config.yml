@@ -12,7 +12,7 @@ newIssueWelcomeComment: >
 # Comment to be posted to on PRs from first time contributors in your repository
 newPRWelcomeComment: >
   Welcome to the community and thanks for opening your first pull request.
-  Feel free to look for more issues to tackle at https://github.com/DinoTools/python-ssdeep/issues
+  Feel free to look for more issues to tackle at https://github.com/sweigmann/python-ssdeeper/issues
 
 # Configuration for first-pr-merge - https://github.com/behaviorbot/first-pr-merge
 

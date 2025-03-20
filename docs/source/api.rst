@@ -4,12 +4,12 @@ API Reference
 Classes
 -------
 
-.. autoclass:: ssdeep.Hash
+.. autoclass:: ssdeeper.Hash
     :members:
     :undoc-members:
     :inherited-members:
 
-.. autoclass:: ssdeep.PseudoHash
+.. autoclass:: ssdeeper.PseudoHash
     :members:
     :undoc-members:
     :inherited-members:
@@ -17,17 +17,17 @@ Classes
 Functions
 ---------
 
-.. autofunction:: ssdeep.compare
-.. autofunction:: ssdeep.hash
-.. autofunction:: ssdeep.hash_from_file
+.. autofunction:: ssdeeper.compare
+.. autofunction:: ssdeeper.hash
+.. autofunction:: ssdeeper.hash_from_file
 
 Exceptions
 ----------
 
-.. autoexception:: ssdeep.BaseError
+.. autoexception:: ssdeeper.BaseError
     :members:
     :undoc-members:
 
-.. autoexception:: ssdeep.InternalError
+.. autoexception:: ssdeeper.InternalError
     :members:
     :undoc-members:

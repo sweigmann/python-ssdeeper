@@ -34,14 +34,14 @@ class TestFunctionsFail(object):
 class TestFunctions(object):
     def test_compare(self):
         res = ssdeeper.compare(
-            "3:AN8gu5QklJgVNhyEgcGwFEBQJaL:VgDhxFkL",
+            "3:AXGBicFlgVNhBGcL6wCrFQEv:AXGHsNhxLsr2C",
             "3:AXGBicFlIHBGcL6wCrFQEv:AXGH6xLsr2C"
         )
         assert res == 44
 
         res = ssdeeper.compare(
-            b"3:AN8gu5QklJgVNhyEgcGwFEBQJaL:VgDhxFkL",
-            b"3:AXGBicFlIHBGcL6wCrFQEv:AXGH6xLsr2C"
+            b"3:AXGBicFlIHBGcL6wCrFQEv:AXGH6xLsr2C",
+            b"3:AXGBicFlgVNhBGcL6wCrFQEv:AXGHsNhxLsr2C"
         )
         assert res == 44
 

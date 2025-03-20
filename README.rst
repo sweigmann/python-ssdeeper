@@ -12,7 +12,23 @@ The ssdeeper wrapper uses the ssdeep libraries as augmented by Fraunhofer FKIE.
 The specific flavor used is `ssdeep-refactored-4b-djb2-nocommonsub`_. 
 Scientific papers and slides on Fraunhofer FKIE's `ssdeeper version 2.14.1`_ 
 may be found on the `DFRWS publication`_ websites. 
- 
+
+.. image:: https://github.com/sweigmann/python-ssdeeper/actions/workflows/codeql-analysis.yml/badge.svg?branch=main
+    :target: https://github.com/sweigmann/python-ssdeeper/actions/workflows/codeql-analysis.yml
+    :alt: CodeQL tests
+
+.. image:: https://github.com/sweigmann/python-ssdeeper/actions/workflows/python-linux.yml/badge.svg?branch=main
+    :target: https://github.com/sweigmann/python-ssdeeper/actions/workflows/python-linux.yml
+    :alt: CI test status on Linux
+
+.. image:: https://github.com/sweigmann/python-ssdeeper/actions/workflows/debian.yml/badge.svg?branch=main
+    :target: https://github.com/sweigmann/python-ssdeeper/actions/workflows/debian.yml
+    :alt: CI test status on Debian
+
+.. image:: https://github.com/sweigmann/python-ssdeeper/actions/workflows/ubuntu.yml/badge.svg?branch=main
+    :target: https://github.com/sweigmann/python-ssdeeper/actions/workflows/ubuntu.yml
+    :alt: CI test status on Ubuntu
+
 How to use it
 =============
 
@@ -54,9 +70,8 @@ For more information have a look at the `python-ssdeep documentation`_.
 Tested on ...
 =============
 
-* CentOS 7
-* Debian 8, 9, 13
-* Ubuntu 14.04, 16.04, 18.04
+* Debian 12, 13
+* Ubuntu 24.04
 
 Documentation
 =============

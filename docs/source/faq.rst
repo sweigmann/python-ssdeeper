@@ -9,7 +9,7 @@ The following example must not return the expected value.
 
 .. code-block:: pycon
 
-    >>> hash1 = ssdeep.hash('foo' * 4096)
-    >>> hash2 = ssdeep.hash('foo' * 4096)
-    >>> ssdeep.compare(hash1, hash2)
+    >>> hash1 = ssdeeper.hash('foo')
+    >>> hash2 = ssdeeper.hash('foo')
+    >>> ssdeeper.compare(hash1, hash2)
     0

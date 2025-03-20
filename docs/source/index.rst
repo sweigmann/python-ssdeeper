@@ -1,16 +1,21 @@
-python-ssdeep
-=============
+python-ssdeeper
+===============
 
 This is a straightforward Python wrapper for `ssdeep by Jesse Kornblum`_, which is a library for computing context
 triggered piecewise hashes (CTPH). Also called fuzzy hashes, CTPH can match inputs that have homologies. Such inputs
 have sequences of identical bytes in the same order, although bytes in between these sequences may be different in both
 content and length.
 
-You can install ``python-ssdeep`` with ``pip``:
+The ssdeeper wrapper uses the ssdeep libraries as augmented by Fraunhofer FKIE. 
+The specific flavor used is `ssdeep-refactored-4b-djb2-nocommonsub`_. 
+Scientific papers and slides on Fraunhofer FKIE's `ssdeeper version 2.14.1`_ 
+may be found on the `DFRWS publication`_ websites. 
+
+You can install ``python-ssdeeper`` with ``pip``:
 
 .. code-block:: console
 
-    $ pip install ssdeep
+    $ python3 -m venv $HOME/venv && $HOME/venv/bin/pip3 install git+https://codeberg.org/DFIR/python-ssdeeper
 
 See :doc:`Installation <installation>` for more information.
 
@@ -44,3 +49,6 @@ Indices and tables
 .. _Denis Bilenko on bitbucket: https://bitbucket.org/denis/ssdeep
 .. _github: https://github.com/DinoTools/python-ssdeep
 .. _Dinotools: https://www.dinotools.org/
+.. _ssdeeper version 2.14.1: https://github.com/fkie-cad/ssdeeper
+.. _ssdeep-refactored-4b-djb2-nocommonsub: https://github.com/fkie-cad/ssdeeper/tree/ssdeep-refactored-4b-djb2-nocommonsub
+.. _DFRWS publication: https://dfrws.org/presentation/ssdeeper-evaluating-and-improving-ssdeep/

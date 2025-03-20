@@ -13,7 +13,7 @@ __title__ = "ssdeeper"
 __summary__ = "Python wrapper for the ssdeep library, augmented by Fraunhofer FKIE"
 __uri__ = "https://codeberg.org/DFIR/python-ssdeeper"
 
-__version__ = "3.5"
+__version__ = "3.5.2"
 
 __author__ = "PhiBo (DinoTools), Sebastian Weigmann"
 __email__ = ""
