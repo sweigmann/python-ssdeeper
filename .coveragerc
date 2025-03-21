@@ -7,5 +7,3 @@ source =
 source =
    src/ssdeeper
    .tox/*/lib/python*/site-packages/ssdeeper
-   .tox/pypy/site-packages/ssdeeper
-   .tox/pypy3/site-packages/ssdeeper
