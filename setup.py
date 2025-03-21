@@ -21,11 +21,6 @@ src_dir = os.path.join(base_dir, "src")
 # sys.path.insert(0, base_dir)
 
 # ALWAYS build the library -- we use FKIE's ssdeeper!
-os.environ["BUILD_LIB"] = "1"
-
-#use_system_lib = True
-#if os.environ.get("BUILD_LIB") == "1":
-#    use_system_lib = False
 use_system_lib = False
 
 

@@ -8,10 +8,10 @@ triggered piecewise hashes (CTPH). Also called fuzzy hashes, CTPH can match inpu
 have sequences of identical bytes in the same order, although bytes in between these sequences may be different in both
 content and length.
 
-The ssdeeper wrapper uses the ssdeep libraries as augmented by Fraunhofer FKIE. 
-The specific flavor used is `ssdeep-refactored-4b-djb2-nocommonsub`_. 
-Scientific papers and slides on Fraunhofer FKIE's `ssdeeper version 2.14.1`_ 
-may be found on the `DFRWS publication`_ websites. 
+The ssdeeper wrapper uses the ssdeep libraries as augmented by Fraunhofer FKIE.
+The specific flavor used is `ssdeep-refactored-4b-djb2-nocommonsub`_.
+Scientific papers and slides on Fraunhofer FKIE's `ssdeeper version 2.14.1`_
+may be found on the `DFRWS publication`_ websites.
 
 .. image:: https://github.com/sweigmann/python-ssdeeper/actions/workflows/codeql-analysis.yml/badge.svg?branch=main
     :target: https://github.com/sweigmann/python-ssdeeper/actions/workflows/codeql-analysis.yml
