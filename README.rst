@@ -89,7 +89,7 @@ Licensing
 
 The code is licensed under the terms of the LGPLv3+.
 
-This wrapper includes the unchanged source distribution of `ssdeep version 2.14.1`_. It is licensed under the GPLv2.
+This wrapper includes the Python wrapper for the ssdeep fuzzy hashing library as enhanced by Fraunhofer FKIE (dubbed `ssdeeper version 2.14.1`_). It is licensed under the GPLv2.
 
 .. _ssdeep by Jesse Kornblum: https://ssdeep-project.github.io/ssdeep/
 .. _ssdeep version 2.14.1: https://github.com/ssdeep-project/ssdeep/releases/tag/release-2.14.1
